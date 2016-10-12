@@ -67,10 +67,11 @@ etc...
 First, using openssl, a pair of TLS (X509) certificates will be generated (one
 for the server and one for the client)
 
-    NOTE: Every time this script runs, different pairs of certificates will be
-    generated. This means you cannot run this script twice and expect the
-    server configured with the first instance to accept connections from the
-    client script created in the second instance.
+    NOTE:
+      Every time this script runs, different pairs of certificates will be
+      generated. This means you cannot run this script twice and expect the
+      server configured with the first instance to accept connections from the
+      client script created in the second instance.
 
 Then, a remote server will be configured (using SSH) like this:
 - The server certificate and the public part of the client certificate are
@@ -101,25 +102,15 @@ socat to establish the TLS tunnel and SSH to use it.
 * The server will only accept connections from clients with the expected
   certificate. This certificate is "embeded" inside the generated client script
   ("**ssh_over_tls_tunnel_client.sh**") in plain text. Because of this you
-  should probably **not** upload this script to "the cloud", or if you do, first
-  encrypt it. Example:
+  should probably **not** upload this script to "the cloud".
+  Fortunately, an addition, an *encrypted* version of this same file is also
+  generated: "**ssh_over_tls_tunnel_client.sh.enc.b64.sh**". When executed it
+  will ask you for the original encryption password and then run. It is safe to
+  upload this to public servers.
 
-      Encryption (before uploading to the cloud):
-      ------------------------------------------
-
-      $ openssl enc -in ssh_over_tls_tunnel_client.sh \
-                    -aes-256-cbc                      \
-                    -pass stdin  > ssh_over_tls_tunnel_client.sh.enc
-
-      Decryption (after downloading from the cloud):
-      ---------------------------------------------
-
-      $ openssl enc -in ssh_over_tls_tunnel_client.sh.enc \
-                    -d -aes-256-cbc                       \
-                    -pass stdin  > ssh_over_tls_tunnel_client.enc
-
-  Note that *even if you don't encrypt it*, the amount of damage that results
-  from this script being leaked to a third party is minimal as it only grants
-  the owner permission to establish connection to the SSH server, which requires
-  authentication anyway.
+      NOTE:
+        Even if you don't encrypt it, the amount of damage that results from
+        this script being leaked to a third party is minimal as it only grants
+        the owner permission to establish connection to the SSH server, which
+        requires authentication anyway.
 

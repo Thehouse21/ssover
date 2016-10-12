@@ -179,7 +179,7 @@ elif [[ "$KEY" == "3" ]]; then
 fi
 
 
-# Create client "all-in-one" script
+# Create client "all-in-one" script (with auto-unencryption built in!)
 
 cat <<-EOF > $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh
 		#!/bin/bash
@@ -228,10 +228,62 @@ echo "END server.crt"           >> $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh
 chmod +x $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh
 
 echo ""
+echo "Enter password to encrypt the client script and press [ENTER]"
+echo "(if you don't want to encrypt it, leave this empty): "
+read -s PASSWORD
+
+if ! [[ -z "$PASSWORD" ]]; then
+    openssl enc    -in $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh \
+                   -aes-256-cbc                                     \
+                   -pass pass:$PASSWORD > $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc
+    
+    openssl base64 -in  $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc  \
+                   -out $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64
+    
+    cat <<-EOF > $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh
+			#!/bin/bash
+			set -e
+			
+			echo "Enter decryption password: "
+			read -s PASSWORD
+			
+			trap 'rm -f ssh_over_tls_tunnel_client.sh ssh_over_tls_tunnel_client.sh.enc ssh_over_tls_tunnel_client.sh.enc.b64' INT TERM HUP EXIT
+			
+			cat \$0 | awk '/^BEGIN payload/{flag=1;next}/^END payload/{flag=0}flag' > ssh_over_tls_tunnel_client.sh.enc.b64
+			openssl base64 -d                              \
+               -in  ssh_over_tls_tunnel_client.sh.enc.b64  \
+               -out ssh_over_tls_tunnel_client.sh.enc
+			openssl enc    -d                        \
+               -in ssh_over_tls_tunnel_client.sh.enc \
+               -aes-256-cbc                          \
+               -pass pass:\$PASSWORD > ssh_over_tls_tunnel_client.sh
+			chmod +x ssh_over_tls_tunnel_client.sh
+			./ssh_over_tls_tunnel_client.sh \$@
+			
+			exit
+			
+			
+			################################################################################
+			# From this point on nothing is executed
+			################################################################################
+			EOF
+    echo "BEGIN payload"                                       >> $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh
+    cat  $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64  >> $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh
+    echo "END payload"                                         >> $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh
+    chmod +x $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh
+fi
+
+
+echo ""
 echo "This is how you connect to the TLS server from a client PC:"
 echo "  * Option A: with a script"
-echo "      1. Simply take the ($OUTPUT_FOLDER/just generated) 'ssh_over_tls_tunnel_client.sh' script with you and execute"
-echo "         it from the client"
+if [[ -z "$PASSWORD" ]]; then
+    echo "      1. Simply take the (just generated) '$OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh' script with you and execute"
+    echo "         it from the client. Make sure no one else ever sees this (unencrypted) script."
+else
+    echo "      1. Simply take the (just generated) '$OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh.enc.b64.sh' script with you"
+    echo "         and execute it from the client. This script is password protected. Feel free to upload it anywhere."
+fi
 echo "  * Option B: manually"
 echo "      1. Copy 'client.pem' and 'server.crt' to the client:"
 echo "           $ scp $OUTPUT_FOLDER/client.pem <user>@<client_ip>:~/ssh_over_tls_tunnel_client"
