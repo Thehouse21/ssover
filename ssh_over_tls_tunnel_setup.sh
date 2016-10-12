@@ -23,7 +23,7 @@ echo "Generating client/server certificates. Please wait (this will take a while
 echo ""
 for FILENAME in server client; do
     openssl genrsa -out $OUTPUT_FOLDER/$FILENAME.key 4096 &>/dev/null
-    openssl req -new -key $OUTPUT_FOLDER/$FILENAME.key -x509 -days 3650 -batch -out $OUTPUT_FOLDER/$FILENAME.crt &>/dev/null
+    openssl req -new -key $OUTPUT_FOLDER/$FILENAME.key -x509 -days 365 -batch -out $OUTPUT_FOLDER/$FILENAME.crt &>/dev/null
     cat $OUTPUT_FOLDER/$FILENAME.key $OUTPUT_FOLDER/$FILENAME.crt >$OUTPUT_FOLDER/$FILENAME.pem
     rm  $OUTPUT_FOLDER/$FILENAME.key
     chmod 600 $OUTPUT_FOLDER/$FILENAME.pem
@@ -62,7 +62,7 @@ if   [[ "$KEY" == "1" ]]; then
     #
     cat <<-EOF > $OUTPUT_FOLDER/ssh_over_tls_tunnel_server
 			### BEGIN INIT INFO
-            # Provides:          ssh_over_tls_tunnel_server
+			# Provides:          ssh_over_tls_tunnel_server
 			# Required-Start:    \$network \$local_fs \$remote_fs
 			# Required-Stop::    \$network \$local_fs \$remote_fs
 			# Should-Start:      \$all
@@ -185,7 +185,7 @@ cat <<-EOF > $OUTPUT_FOLDER/ssh_over_tls_tunnel_client.sh
 		#!/bin/bash
 		
 		if [[ -z "\$1" ]]; then
-		    echo "Usage: %S [<user>@]<remote_server_ip> [extra ssh options, like '-X']"
+		    echo "Usage: \$0 [<user>@]<remote_server_ip> [extra ssh options, like '-X']"
 		    exit 0
 		fi
 		
