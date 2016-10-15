@@ -50,7 +50,7 @@ if [[ "$KEY" == "1" ]] || [[ "$KEY" == "2" ]]; then
     #
     cat <<-EOF > $OUTPUT_FOLDER/ssh_over_tls_tunnel_server.sh
 			while true; do
-                socat openssl-listen:443,reuseaddr,cert=/etc/ssh_over_tls_tunnel_server/server.pem,cafile=/etc/ssh_over_tls_tunnel_server/client.crt tcp:localhost:22
+                socat -d -d openssl-listen:443,reuseaddr,cert=/etc/ssh_over_tls_tunnel_server/server.pem,cafile=/etc/ssh_over_tls_tunnel_server/client.crt tcp:localhost:22
 			    sleep 1
 			done
 			EOF
