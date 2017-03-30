@@ -1,4 +1,4 @@
-#DESCRIPTION
+# DESCRIPTION
 
 Running this script will do two things:
 
@@ -9,7 +9,7 @@ Running this script will do two things:
 This script takes no arguments and will ask you for input interactively.
 
 
-#RATIONALE
+# RATIONALE
 
 Why is this useful? What don't we just use SSH?
 
@@ -39,7 +39,7 @@ etc...
       Also, the "speed reduction" is minimal. I haven't been able to notice it.
 
 
-#PREREQUISITES
+# PREREQUISITES
 
 * You must run this script from a computer that has SSH access to the
   server you want to configure on port 22.
@@ -62,7 +62,7 @@ etc...
         Arch          --> $ sudo pacman -S socat openssl
 
 
-#IMPLEMENTATION DETAILS
+# IMPLEMENTATION DETAILS
 
 First, using openssl, a pair of TLS (X509) certificates will be generated (one
 for the server and one for the client)
@@ -74,8 +74,10 @@ for the server and one for the client)
       client script created in the second instance.
 
 Then, a remote server will be configured (using SSH) like this:
+
 - The server certificate and the public part of the client certificate are
   copied to the '/etc/tls_tunnel_server' folder.
+
 - The init system (either 'init.d' or 'systemd') is configured to run a 'socat'
   command that, using the just copied certificates, creates a TLS tunnel that
   is connected to localhost:22 (ie. the SSH server).
